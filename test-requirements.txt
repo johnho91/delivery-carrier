@@ -1,3 +1,4 @@
 odoo-test-helper >= 1.1.0
 vcrpy
 vcrpy-unittest
+odoo14-addon-base_delivery_carrier_label @git+https://github.com/OCA/delivery-carrier@refs/pull/455/head#subdirectory=setup/base_delivery_carrier_label
