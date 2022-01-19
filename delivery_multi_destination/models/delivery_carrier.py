@@ -3,8 +3,12 @@
 # Copyright 2021 Gianmarco Conte <gconte@dinamicheaziendali.it>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import logging
+
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
+
+_logger = logging.getLogger(__name__)
 
 
 class DeliveryCarrier(models.Model):
@@ -102,7 +106,9 @@ class DeliveryCarrier(models.Model):
                             ).send_shipping(pickings)
                             break
                         except Exception:
-                            pass
+                            _logger.warning(
+                                "Carrier send shiping failed: %s", subcarrier.name
+                            )
                 if not picking_res:
                     raise ValidationError(_("There is no matching delivery rule."))
                 res += picking_res
