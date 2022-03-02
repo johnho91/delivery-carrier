@@ -67,31 +67,19 @@ class StockPicking(models.Model):
         # We consider that label has already been generated in case we have a
         # carrier tracking ref, this way we may print the labels before shipping
         # and not generated in second time during shipment
+        shipping_labels = self.generate_shipping_labels()
+        for label in shipping_labels:
+            self.attach_shipping_label(label)
+        self._set_carrier_tracking_ref(shipping_labels)
         if self.carrier_tracking_ref:
             return
         else:
             return super().send_to_shipper()
 
-    @api.onchange("carrier_id")
-    def onchange_carrier_id(self):
-        """ Inherit this method in your module """
-        if not self.carrier_id:
-            return
-        # This can look useless as the field carrier_code and
-        # carrier_type are related field. But it's needed to fill
-        # this field for using this fields in the view. Indeed the
-        # module that depend of delivery base can hide some field
-        # depending of the type or the code
-        carrier = self.carrier_id
-        self.update(
-            {"delivery_type": carrier.delivery_type, "carrier_code": carrier.code}
-        )
-        default_options = carrier.default_options()
-        self.option_ids = [(6, 0, default_options.ids)]
-        result = {
-            "domain": {"option_ids": [("id", "in", carrier.available_option_ids.ids)]}
-        }
-        return result
+    def _set_carrier_tracking_ref(self, shipping_labels):
+        if len(shipping_labels) == 1:
+            label = shipping_labels[0]
+            self.write({"carrier_tracking_ref": label.get("tracking_number")})
 
     @api.onchange("option_ids")
     def onchange_option_ids(self):
@@ -138,8 +126,7 @@ class StockPicking(models.Model):
 
     @api.model
     def create(self, vals):
-        """Trigger onchange_carrier_id on create
-
+        """
         To ensure options are setted on the basis of carrier_id copied from
         Sale order or defined by default.
 

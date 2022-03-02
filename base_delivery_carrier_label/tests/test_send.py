@@ -1,8 +1,7 @@
 # Copyright 2020 Hunki Enterprises BV
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 import base64
-
-import mock
+from unittest.mock import patch
 
 from odoo.tests.common import Form, TransactionCase
 
@@ -21,7 +20,7 @@ class TestSend(TransactionCase):
         picking_form.carrier_id = carrier
         picking = picking_form.save()
 
-        with mock.patch.object(type(carrier), "fixed_send_shipping") as mocked:
+        with patch.object(type(carrier), "fixed_send_shipping") as mocked:
             mocked.return_value = [
                 dict(
                     labels=[
