@@ -97,24 +97,23 @@ class PostlogisticsWebService(object):
 
         partner_name = partner.name or partner.parent_id.name
         sanitized_partner_name = self._sanitize_string(partner_name)
-        partner_street = self._sanitize_string(partner.street)
         partner_zip = self._sanitize_string(partner.zip)
         partner_city = self._sanitize_string(partner.city)
         recipient = {
             "name1": sanitized_partner_name[:35],
-            "street": partner_street[:35],
             "zip": partner_zip[:10],
             "city": partner_city[:35],
         }
 
+        if partner.street:
+            addr_suffix = self._sanitize_string(partner.street[:35])
+            recipient["addressSuffix"] = addr_suffix
+        if partner.street2:
+            street = self._sanitize_string(partner.street2[:35])
+            recipient["street"] = street
         if partner.country_id.code:
             country_code = self._sanitize_string(partner.country_id.code.upper())
             recipient["country"] = country_code
-
-        if partner.street2:
-            addr_suffix = self._sanitize_string(partner.street2[:35])
-            recipient["addressSuffix"] = addr_suffix
-
         company_partner_name = partner.commercial_company_name
         if company_partner_name and company_partner_name != partner_name:
             parent_name = self._sanitize_string(partner.parent_id.name)
